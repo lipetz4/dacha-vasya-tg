@@ -11,21 +11,28 @@ html,body{margin:0;height:100%;background:#2b4a1e;overflow:hidden}#game{width:10
 body::before{content:"";position:fixed;inset:-40px;background:#2b4a1e url(assets/bg_blur.jpg) center/cover no-repeat;filter:saturate(1.1);z-index:0}
 body::after{content:"";position:fixed;inset:0;background:radial-gradient(ellipse at center,rgba(0,0,0,0) 35%,rgba(10,20,5,.55) 100%);z-index:0;pointer-events:none}
 @media (min-aspect-ratio:3/4){#game canvas{border-radius:22px;box-shadow:0 0 0 7px #b07a3e,0 0 0 13px #6b4220,0 0 0 15px #3b2310,0 24px 70px rgba(0,0,0,.6)}#game{height:calc(100% - 44px);margin-top:22px}}
-</style><script>// Inlined into <head> of the TG build BEFORE any other script. Collects errors; shows them at the bottom of the screen
-// when ?debug=1, or when the game did not start in time (watchdog) - with a "restart without cloud" button (?safe=1).
-(function(){var L=[],box=null,t0=Date.now(),q=location.search,DEBUG=/[?&]debug=1/.test(q)||/tgWebAppStartParam=debug/.test(location.hash);
- function show(force){if(!(DEBUG||force)||!document.body)return;if(!box){box=document.createElement('div');box.id='tgdbg';
-  box.style.cssText='position:fixed;left:0;right:0;bottom:0;z-index:99999;max-height:40%;overflow:auto;background:rgba(0,0,0,.78);color:#ffe9a8;font:11px/1.35 monospace;padding:6px 8px;white-space:pre-wrap;pointer-events:auto';document.body.appendChild(box)}
-  var wa=window.Telegram&&Telegram.WebApp,info='TG '+(wa?(wa.version+' '+wa.platform+' initData:'+(wa.initData?'yes':'no')+' cloud:'+(wa.CloudStorage?'yes':'no')):'none')+' | '+(window.BUILD_VERSION||'')+' | '+navigator.userAgent.slice(0,90);
-  box.textContent=info+'\n'+L.slice(-25).join('\n')}
- window.TGDBG={log:function(m){L.push(((Date.now()-t0)/1000).toFixed(1)+'s '+m);if(box||DEBUG)show()},list:L,show:show};
- window.addEventListener('error',function(e){TGDBG.log('ERR '+(e.message||'')+' @'+String(e.filename||'').split('/').pop()+':'+e.lineno)});
- window.addEventListener('unhandledrejection',function(e){var r=e.reason;TGDBG.log('REJ '+(r&&(r.message||r.description)||JSON.stringify(r)))});
- document.addEventListener('DOMContentLoaded',function(){show()});
- setTimeout(function(){if(window.__scene&&window.__scene.ready)return;TGDBG.log('WATCHDOG: game not started in 10s');show(true);
-  if(/[?&]safe=1/.test(q))return;var b=document.createElement('button');b.textContent='Перезапустить без облака';
-  b.style.cssText='display:block;margin:6px 0 2px;padding:8px 14px;font:700 14px sans-serif;border:0;border-radius:8px;background:#f0a33a;color:#3b2310';
-  b.onclick=function(){location.replace(location.pathname+(q?q+'&':'?')+'safe=1'+location.hash)};box.appendChild(b)},10000);})();
-</script><script src="https://telegram.org/js/telegram-web-app.js?59"></script><style>#game{position:fixed!important;top:var(--tg-pad-top,0);bottom:var(--tg-pad-bottom,0);left:var(--tg-pad-left,0);right:var(--tg-pad-right,0);height:auto!important;margin:0!important}@media (min-aspect-ratio:3/4){#game{top:calc(var(--tg-pad-top,0px) + 16px);bottom:calc(var(--tg-pad-bottom,0px) + 16px)}}</style></head><body><div id="game"></div>
+</style><script>// FIRST inline script of the TG build (plain ES5 on purpose). Records loader steps + errors. Shows a diagnostic overlay
+// at the bottom with ?debug=1 / startapp=debug, and a LARGE overlay on top of everything if the game is not up in 8 s.
+(function(){var L=[],S=[],box=null,t0=Date.now(),q=location.search,DEBUG=/[?&]debug=1/.test(q)||/tgWebAppStartParam=debug/.test(location.hash),big=false;
+ function ts(){return((Date.now()-t0)/1000).toFixed(1)+'s '}
+ function info(){var wa=window.Telegram&&window.Telegram.WebApp;
+  return 'Build: '+(window.BUILD_VERSION||'?')+'\nSteps: '+S.join(' > ')+'\nWebApp: '+(wa?(wa.version+' '+wa.platform+' initData:'+(wa.initData?'yes':'no')+' cloud:'+(wa.CloudStorage?'yes':'no')):'none')+
+   '\nUA: '+navigator.userAgent+'\nScreen: '+innerWidth+'x'+innerHeight+' dpr '+(window.devicePixelRatio||1)}
+ function show(force){if(!(DEBUG||force||box))return;var host=document.body||document.documentElement;if(!host)return;
+  if(!box){box=document.createElement('div');box.id='tgdbg';host.appendChild(box)}
+  box.style.cssText=big?'position:fixed;left:0;right:0;top:0;bottom:0;z-index:2147483647;overflow:auto;background:rgba(20,10,0,.92);color:#fff;font:14px/1.45 -apple-system,monospace;padding:16px;white-space:pre-wrap;word-break:break-word'
+   :'position:fixed;left:0;right:0;bottom:0;z-index:2147483647;max-height:40%;overflow:auto;background:rgba(0,0,0,.78);color:#ffe9a8;font:11px/1.35 monospace;padding:6px 8px;white-space:pre-wrap;word-break:break-word';
+  box.textContent=(big?'Игра не запустилась. Пришлите, пожалуйста, скриншот этого экрана.\n\n':'')+info()+'\n'+L.slice(-30).join('\n');
+  if(big&&!/[?&]safe=1/.test(q)){var b=document.createElement('button');b.textContent='Перезапустить без облака';
+   b.style.cssText='display:block;margin:12px 0;padding:10px 16px;font:700 16px sans-serif;border:0;border-radius:8px;background:#f0a33a;color:#3b2310';
+   b.onclick=function(){location.replace(location.pathname+(q?q+'&':'?')+'safe=1'+location.hash)};box.appendChild(b)}}
+ window.TGDBG={log:function(m){L.push(ts()+m);show()},step:function(s){S.push(s+'@'+ts().trim())},list:L,steps:S,show:show};
+ window.addEventListener('error',function(e){var t=e.target;if(t&&t!==window&&(t.src||t.href)){TGDBG.log('LOAD FAIL '+(t.src||t.href));return}
+  TGDBG.log('ERR '+(e.message||'')+' @'+String(e.filename||'').split('/').pop()+':'+e.lineno+':'+e.colno)},true);
+ window.addEventListener('unhandledrejection',function(e){var r=e.reason;TGDBG.log('REJ '+(r&&(r.message||r.description)||String(r)))});
+ document.addEventListener('DOMContentLoaded',function(){TGDBG.step('dom');show()});
+ setTimeout(function(){if(window.__scene&&window.__scene.ready)return;big=true;TGDBG.log('WATCHDOG: game not started in 8s');show(true)},8000);
+ TGDBG.step('head');})();
+</script><script src="https://telegram.org/js/telegram-web-app.js?59"></script><script>TGDBG.step(window.Telegram&&Telegram.WebApp?"sdk":"sdk MISSING")</script><style>#game{position:fixed!important;top:var(--tg-pad-top,0);bottom:var(--tg-pad-bottom,0);left:var(--tg-pad-left,0);right:var(--tg-pad-right,0);height:auto!important;margin:0!important}@media (min-aspect-ratio:3/4){#game{top:calc(var(--tg-pad-top,0px) + 16px);bottom:calc(var(--tg-pad-bottom,0px) + 16px)}}</style></head><body><div id="game"></div>
 
-<script src="lib/phaser.min.js"></script><script src="tg-config.js"></script><script>window.BUILD_VERSION='tg-20261022-0320';window.GAME_API=(window.TG_CONFIG&&window.TG_CONFIG.api)||'';(function(){var c=document.createElement('canvas');c.width=c.height=1;if(c.toDataURL('image/webp').indexOf('data:image/webp')!==0){document.addEventListener('DOMContentLoaded',function(){document.body.innerHTML='<div style="color:#fff;font:700 20px sans-serif;text-align:center;padding:40px">Обновите Telegram, чтобы играть.</div>'});window.__NOWEBP=1}})();</script><script src="game.min.js"></script></body></html>
+<script src="lib/phaser.min.js?v=tg-20261022-0336"></script><script>TGDBG.step('phaser.min.js')</script><script src="tg-config.js?v=tg-20261022-0336"></script><script>TGDBG.step('config')</script><script>window.BUILD_VERSION='tg-20261022-0336';window.GAME_API=(window.TG_CONFIG&&window.TG_CONFIG.api)||'';(function(){var i=new Image();i.onload=function(){TGDBG.step('webp ok')};i.onerror=function(){window.__NOWEBP=1;TGDBG.log('WebP not supported');var d=document.createElement('div');d.style.cssText='position:fixed;inset:0;z-index:2147483646;background:#2b4a1e;color:#fff;font:700 20px sans-serif;text-align:center;padding:40px';d.textContent='Обновите Telegram, чтобы играть.';(document.body||document.documentElement).appendChild(d)};i.src='data:image/webp;base64,UklGRhoAAABXRUJQVlA4TA0AAAAvAAAAEAcQERGIiP4HAA=='})();</script><script src="game.min.js?v=tg-20261022-0336"></script><script>TGDBG.step('game.min.js')</script></body></html>
