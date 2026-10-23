@@ -6,5 +6,6 @@ window.TG_CONFIG={
  adsgram:{rewarded:'',interstitial:''}, // Adsgram blockId: rewarded e.g. '12345', interstitial e.g. 'int-12345'
  monetag:{zone:'',sdk:''}, // optional fallback: Monetag zone id + script URL exactly as in the Monetag dashboard snippet; empty = off
  api:'https://79-174-12-35.sslip.io/api',            // game server (HTTPS) for Stars purchases; empty = shop hidden, game is free
+ apiAlt:'https://tg-relay.lipetz4.workers.dev/api', // fallback (Cloudflare relay) when the main server is unreachable
  headerColor:'#2b4a1e',
 };
