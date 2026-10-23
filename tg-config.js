@@ -5,6 +5,6 @@ window.TG_CONFIG={
  app:'play',        // Mini App short name (from BotFather /newapp) -> https://t.me/<bot>/<app>
  adsgram:{rewarded:'',interstitial:''}, // Adsgram blockId: rewarded e.g. '12345', interstitial e.g. 'int-12345'
  monetag:{zone:'',sdk:''}, // optional fallback: Monetag zone id + script URL exactly as in the Monetag dashboard snippet; empty = off
- api:'',            // game server (HTTPS) for Stars purchases; empty = shop hidden, game is free
+ api:'https://79-174-12-35.sslip.io/api',            // game server (HTTPS) for Stars purchases; empty = shop hidden, game is free
  headerColor:'#2b4a1e',
 };
