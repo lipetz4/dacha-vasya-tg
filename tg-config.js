@@ -8,4 +8,6 @@ window.TG_CONFIG={
  api:'https://79-174-12-35.sslip.io/api',            // game server (HTTPS) for Stars purchases; empty = shop hidden, game is free
  apiAlt:'https://tg-relay.lipetz4.workers.dev/api', // fallback (Cloudflare relay) when the main server is unreachable
  headerColor:'#2b4a1e',
+ publicUrl:'https://vk.ru/public37414068', // community page for the «Подпишись на паблик Васи» offer (tg/tg_sub_web.js)
+ subBonus:true,     // small one-time «спасибо за визит» bonus for opening the community; false = offer hidden
 };
